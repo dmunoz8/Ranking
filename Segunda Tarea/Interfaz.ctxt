@@ -1,0 +1,13 @@
+#BlueJ class context
+comment0.params=
+comment0.target=Interfaz()
+comment0.text=\r\n\ Constructor\ for\ objects\ of\ class\ Interfaz\r\n
+comment1.params=
+comment1.target=java.lang.String\ consultar()
+comment2.params=
+comment2.target=int\ comenzar()
+comment2.text=\r\n\ @brief\:\ Ventana\ que\ da\ la\ opcion\ de\ iniciar\ la\ construcci\u00F3n\ del\ \u00EDndice\ o\ salir\ del\ programa\r\n\ @params\:\ N/A\r\n\ @return\:\ opcion\ seleccionada\r\n
+comment3.params=
+comment3.target=boolean[]\ configuracion()
+comment3.text=\r\n\ @brief\:\ Ventana\ para\ seleccionar\ opciones\ de\ normalizaci\u00F3n\ de\ t\u00E9rminos\ y\ de\ construcci\u00F3n\ del\ \u00EDndice\ o\ salir\ del\ programa\r\n\ @params\:\ N/A\r\n\ @return\:\ opciones\ seleccionadas\ en\ forma\ de\ booleanos\r\n
+numComments=4

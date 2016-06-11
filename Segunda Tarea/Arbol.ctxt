@@ -1,0 +1,27 @@
+#BlueJ class context
+comment0.params=
+comment0.target=Arbol()
+comment1.params=
+comment1.target=java.util.Map\ getRaiz()
+comment2.params=
+comment2.target=void\ limpiar()
+comment3.params=
+comment3.target=boolean\ estarVacia()
+comment3.text=\r\n\ @brief\:\ Verifica\ si\ hay\ elementos\ en\ el\ diccionario\r\n\ @params\:\ N/A\r\n\ @return\:\ estado\ del\ diccionario\r\n
+comment4.params=termino\ doc
+comment4.target=void\ agregar(java.lang.String,\ java.lang.String)
+comment4.text=\r\n\ @brief\:\ Agrega\ un\ termino\ nuevo\ al\ diccionario\r\n\ @params\:\ termino\ a\ agregar\ y\ el\ documento\ donde\ se\ encuentra.\r\n\ @return\:\ N/A\r\n
+comment5.params=
+comment5.target=int\ contar()
+comment5.text=\r\n\ @brief\:\ Devuelve\ la\ cantidad\ de\ elementos\ en\ el\ diccionario\r\n\ @params\:\ N/A\r\n\ @return\:\ cantidad\ de\ elementos\ en\ el\ diccionario\r\n
+comment6.params=palabra
+comment6.target=boolean\ buscar(java.lang.String)
+comment6.text=\r\n\ @brief\:\ Revisa\ si\ ya\ existe\ el\ termino\ en\ el\ diccionario.\r\n\ @params\:\ termino\ a\ buscar\r\n\ @return\:\ verdadero\ si\ esta\ en\ el\ diccionario,\ falso\ si\ no\r\n
+comment7.params=term\ doc
+comment7.target=double\ buscarTF(java.lang.String,\ java.lang.String)
+comment8.params=pesos
+comment8.target=java.util.List\ normalizar(java.util.List)
+comment9.params=termino\ doc
+comment9.target=void\ sumar(java.lang.String,\ java.lang.String)
+comment9.text=\r\n\ @brief\:\ Agrega\ una\ nueva\ aparicion\ del\ termino\ en\ el\ documento,\ en\ el\ diccionario,\ si\ el\ documento\ no\ existe\ lo\ agrega.\r\n\ @params\:\ termino\ a\ agregar\ y\ el\ documento\ donde\ se\ encuentra.\r\n\ @return\:\ N/A\r\n
+numComments=10

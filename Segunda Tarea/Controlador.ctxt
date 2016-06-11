@@ -1,0 +1,20 @@
+#BlueJ class context
+comment0.params=
+comment0.target=Controlador()
+comment0.text=\r\n\ Constructor\r\n
+comment1.params=stemm\ simb\ stop
+comment1.target=void\ run(boolean,\ boolean,\ boolean)
+comment1.text=\r\n\ Revisa\ los\ documentos\ a\ leer\r\n\r\n\ @PARAM\ \=\ boolean\ stem,\ simb\ y\ stop\:\ configuraci\u00F3n\ de\ la\ construcci\u00F3n\ del\ indice.\r\n\ @return\ \=\ N/A\r\n
+comment2.params=aFile\ stemm\ simb\ stop\ consultas
+comment2.target=void\ Leer(java.io.File,\ boolean,\ boolean,\ boolean,\ java.lang.String[])
+comment2.text=\r\n\ Lee\ los\ contenidos\ de\ los\ archivos\r\n\r\n\ @PARAM\ \=\ File\:\ archivo\ a\ leer;\ stem,\ simb\ y\ stop\:\ configuraci\u00F3n\ de\ la\ construcci\u00F3n\ del\ indice.\r\n\ @return\ \=\ N/A\r\n
+comment3.params=nombre
+comment3.target=void\ obtenerDocs(java.lang.String)
+comment4.params=aFile\ nombre
+comment4.target=void\ LeerDF(java.io.File,\ java.lang.String)
+comment5.params=consulta
+comment5.target=void\ dividirConsulta(java.lang.String)
+comment6.params=args
+comment6.target=void\ main(java.lang.String[])
+comment6.text=\r\n\ Programa\ principal\ para\ elegir\ las\ opciones\ de\ configuraci\u00F3n\ y\ normalizacion\r\n
+numComments=7

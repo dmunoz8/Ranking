@@ -1,0 +1,3 @@
+auto={Texto2.txt=1}
+car={Texto2.txt=1}
+insurance={Texto2.txt=2}
