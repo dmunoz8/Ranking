@@ -1,4 +1,4 @@
-auto={Texto3.txt=1}
-car={Texto3.txt=1}
-hola={Texto3.txt=1}
-insurance={Texto3.txt=2}
+auto={Texto9.txt=1}
+car={Texto9.txt=1}
+hola={Texto9.txt=1}
+insurance={Texto9.txt=2}

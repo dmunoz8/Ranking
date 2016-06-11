@@ -30,6 +30,7 @@ public class Controlador
     private List consultas = new ArrayList();
     private TreeMap<String,Integer> termDocs = new TreeMap<String, Integer>();
     private TreeMap<String, Double> pesoConsultas = new TreeMap<String, Double>();
+    private TreeMap<String, Double> ranking = new TreeMap<String, Double>();
     private int cuenta = 0;
     private int noDocuments;
 
@@ -61,7 +62,30 @@ public class Controlador
             {
                 Leer(documents[i], stemm, simb, stop, terminosConsulta); //Lee el contenido, le envía las opciones ingresadas por el usuario
             }
-
+            
+            File temp;
+            File[] documentos = documents;
+            
+            for (int i = 0; i < ranking.size(); i++) 
+            {
+                for (int j = 1; j < ranking.size() - i; j++) 
+                { 
+                    if (ranking.get(documentos[j - 1].getName()) > ranking.get(documentos[j].getName())) 
+                    {
+                        temp = documentos[j - 1];
+                        documentos[j - 1] = documentos[j];
+                        documentos[j] = temp;
+                    }     
+                }
+            }
+            
+            System.out.println("Ranking" + ranking.values());
+            
+            for(int i = 0; i < documentos.length; i++)
+            {
+              System.out.println("Documentos: " + documentos[i].getName());    
+            }
+            
             int contar = arbol.contar(); 
             System.out.println("Tamaño del ínidice "+contar);  //Tamaño del indice
             File invertedIndexFile = new File("index" + File.separator + "invertedindex.txt"); // Crea el archivo donde guardar el indice invertido
@@ -195,19 +219,19 @@ public class Controlador
                 for(int o = 0; o < terminos.size(); o++) 
                 {
                     pesosDocumentos.add(arbol.buscarTF((String)terminos.get(o), aFile.getName())); //busca la frecuencia con logaritmos de una vez por cada termino en el documento
-                    System.out.println(pesosDocumentos.get(o));
+                    //System.out.println(pesosDocumentos.get(o));
                 }
                 
                 documentosNormal = arbol.normalizar(pesosDocumentos); //normaliza los terminos encontrados dentro del documento
-                for(int k = 0; k < documentosNormal.size(); k++)
+               /* for(int k = 0; k < documentosNormal.size(); k++)
                 {
                     System.out.println("Normalizado:" + documentosNormal.get(k));
-                }
+                }*/
                 
                 cuenta++;
                 obtenerDocs(aFile.getName());
                 
-                System.out.println("DF por termino:" + termDocs.values());
+                //System.out.println("DF por termino:" + termDocs.values());
                                                           
                 for(int g = 0; g < terminos.size(); g++)
                 {
@@ -220,21 +244,22 @@ public class Controlador
                             pesoConsultas.put((String)terminos.get(g), pesoC);
                         }
                     }
-                    System.out.println("TF Log:" + pesoConsultas.values());
+                    //System.out.println("TF Log:" + pesoConsultas.values());
                 } 
                 
                 sacarPeso();
-                System.out.println("Pesos:" + pesoConsultas.values());
+                //System.out.println("Pesos:" + pesoConsultas.values());
                 double pesoFinal = 0;
                 
                 for(int a = 0; a < terminos.size(); a++)
                 {
                     double producto = (double)documentosNormal.get(a)*pesoConsultas.get(terminos.get(a));
                     pesoFinal += producto;
-                    System.out.println("Producto:" + producto);
+                    //System.out.println("Producto:" + producto);
                 }
                 
                 System.out.println("Coseno:" + pesoFinal);
+                ranking.put(aFile.getName(),pesoFinal);
             }
             finally
             {
