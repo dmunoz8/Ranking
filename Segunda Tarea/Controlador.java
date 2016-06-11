@@ -29,7 +29,9 @@ public class Controlador
     private List terminos = new ArrayList();
     private List consultas = new ArrayList();
     private TreeMap<String,Integer> termDocs = new TreeMap<String, Integer>();
+    private TreeMap<String, Double> pesoConsultas = new TreeMap<String, Double>();
     private int cuenta = 0;
+    private int noDocuments;
 
     /**
      * Constructor
@@ -54,7 +56,7 @@ public class Controlador
                 System.exit(1);
             }
             File[] documents = textFilesDirectory.listFiles(); //Crea un array de archivos
-            int noDocuments = documents.length;
+            noDocuments = documents.length;
             for(int i = 0; i < noDocuments; i++)
             {
                 Leer(documents[i], stemm, simb, stop, terminosConsulta); //Lee el contenido, le envía las opciones ingresadas por el usuario
@@ -94,6 +96,7 @@ public class Controlador
             {
                 termDocs.clear();
                 terminos.clear();
+                pesoConsultas.clear();
                 cuenta = 0;
                 arbol.limpiar();
                 List pesosDocumentos = new ArrayList();
@@ -104,6 +107,16 @@ public class Controlador
                 {
                     termDocs.put(consultas[x],0);
                     terminos.add(consultas[x]);
+                    if(pesoConsultas.containsKey(consultas[x]) == false)
+                    {
+                        pesoConsultas.put(consultas[x],1.0);
+                    }
+                    else
+                    {
+                        double peso = pesoConsultas.get(consultas[x]);
+                        peso++;
+                        pesoConsultas.put(consultas[x],peso);
+                    }
                 }
                 
                 while (( line = input.readLine()) != null) //lee linea por linea, si es nulo llego al final del archivo
@@ -156,7 +169,11 @@ public class Controlador
                             {
                                 terminos.add(term); // agrega los terminos de todo el documento pero revisa antes si ya estan incluidos por la consulta
                             }
-                            
+                            if(pesoConsultas.containsKey(term) == false)
+                            {
+                                double a = 0;
+                                pesoConsultas.put(term,a); // agrega los terminos de todo el documento pero revisa antes si ya estan incluidos por la consulta
+                            }
                             if(termDocs.containsKey(term) == true)
                             {
                                 int dfActual = termDocs.get(term);
@@ -190,10 +207,34 @@ public class Controlador
                 cuenta++;
                 obtenerDocs(aFile.getName());
                 
-                for(int l = 0; l < termDocs.size(); l++)
+                System.out.println("DF por termino:" + termDocs.values());
+                                                          
+                for(int g = 0; g < terminos.size(); g++)
                 {
-                    System.out.println("DF por termino:" + termDocs.values());
+                    if(pesoConsultas.containsKey(terminos.get(g)) == true)
+                    {
+                        double pesoC = pesoConsultas.get(terminos.get(g));
+                        if(pesoC > 0.0)
+                        {
+                            pesoC = 1 + (Math.log10(pesoC));
+                            pesoConsultas.put((String)terminos.get(g), pesoC);
+                        }
+                    }
+                    System.out.println("TF Log:" + pesoConsultas.values());
+                } 
+                
+                sacarPeso();
+                System.out.println("Pesos:" + pesoConsultas.values());
+                double pesoFinal = 0;
+                
+                for(int a = 0; a < terminos.size(); a++)
+                {
+                    double producto = (double)documentosNormal.get(a)*pesoConsultas.get(terminos.get(a));
+                    pesoFinal += producto;
+                    System.out.println("Producto:" + producto);
                 }
+                
+                System.out.println("Coseno:" + pesoFinal);
             }
             finally
             {
@@ -206,6 +247,22 @@ public class Controlador
         }
     }
     
+    public void sacarPeso()
+    {
+        for(int i = 0; i < terminos.size(); i++)
+        {
+            int df = termDocs.get(terminos.get(i));
+            if(df == 0)
+            {
+                df = 1;
+            }
+            double idf = 1 + (Math.log10(noDocuments/df));
+            double tf = pesoConsultas.get(terminos.get(i));
+            double peso = tf*idf;
+            pesoConsultas.put((String)terminos.get(i), peso);
+        }
+    }
+    
     public void obtenerDocs(String nombre)
     {
         File textFilesDirectory = new File("documents"); //Revisa la carpeta
@@ -215,8 +272,8 @@ public class Controlador
              System.exit(1);
         }
         File[] documents = textFilesDirectory.listFiles(); //Crea un array de archivos
-        int noDocuments = documents.length;
-        for(int i = 0; i < noDocuments; i++)
+        int nuDocuments = documents.length;
+        for(int i = 0; i < nuDocuments; i++)
         {
             cuenta++;
             LeerDF(documents[i],nombre); //Lee el contenido, le envía las opciones ingresadas por el usuario          
