@@ -103,7 +103,7 @@ public class Arbol {
         return 1 + (Math.log10(tf));
     }
     
-    public List normalizar(List pesos)
+    public List normalizar(List pesos) //coseno
     {
         List normalizado = new ArrayList();
         double resultado = 0;
@@ -142,6 +142,5 @@ public class Arbol {
         else{
             lista.put(doc,1);
         }
-    }
-
+    }     
 }

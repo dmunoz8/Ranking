@@ -7,8 +7,10 @@ import java.lang.*;
 import javax.swing.JOptionPane;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import java.lang.Object;
-import java.awt.GridLayout;
+import java.awt.Dimension;
 
 public class Interfaz extends JFrame
 {
@@ -19,10 +21,14 @@ public class Interfaz extends JFrame
      */
     public Interfaz()
     {}
-    
+
     public String consultar()
     {
         String texto = JOptionPane.showInputDialog(null,"Escriba su Consulta:");
+        if (texto == null)
+        {
+            System.exit(1);   //si se selecciona salir o se cierra la ventana
+        }
         texto.toLowerCase();
         return texto;
     }
@@ -60,13 +66,6 @@ public class Interfaz extends JFrame
         JCheckBox simbolosCheck = new JCheckBox("Signos de puntuacion");
         JCheckBox stopCheck = new JCheckBox("Elimina stop words");
         Object[] params = {stemmingCheck, simbolosCheck,stopCheck, "Aceptar", "Cancelar"};
-        /*setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(300, 100);
-        setLayout(new GridLayout());
-        getContentPane().add(stemmingCheck);
-        getContentPane().add(simbolosCheck);
-        getContentPane().add(stopCheck);
-        setVisible(true);*/
         int n = JOptionPane.showOptionDialog(null,null, "Seleccione las opciones de indexado",JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE, 
                 null,  params, "Opciones");
@@ -76,5 +75,15 @@ public class Interfaz extends JFrame
         }
         boolean []vals = {stemmingCheck.isSelected(), simbolosCheck.isSelected(), stopCheck.isSelected()}; //stemm = [0], simbolos = [1], sin stopWords = [2]
         return vals;
+    }
+
+    public void mostrarResultados(String results){
+        JTextArea textArea = new JTextArea(results);
+        JScrollPane scrollPane = new JScrollPane(textArea);  
+        textArea.setLineWrap(true);  
+        textArea.setWrapStyleWord(true); 
+        scrollPane.setPreferredSize( new Dimension( 500, 500 ) );
+        JOptionPane.showMessageDialog(null, scrollPane, "Resultados de la búsqueda",  
+                JOptionPane.OK_CANCEL_OPTION);
     }
 }

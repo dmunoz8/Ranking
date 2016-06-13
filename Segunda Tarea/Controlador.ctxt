@@ -3,20 +3,22 @@ comment0.params=
 comment0.target=Controlador()
 comment0.text=\r\n\ Constructor\r\n
 comment1.params=stemm\ simb\ stop
-comment1.target=void\ run(boolean,\ boolean,\ boolean)
+comment1.target=java.lang.String\ run(boolean,\ boolean,\ boolean)
 comment1.text=\r\n\ Revisa\ los\ documentos\ a\ leer\r\n\r\n\ @PARAM\ \=\ boolean\ stem,\ simb\ y\ stop\:\ configuraci\u00F3n\ de\ la\ construcci\u00F3n\ del\ indice.\r\n\ @return\ \=\ N/A\r\n
 comment2.params=aFile\ stemm\ simb\ stop\ consultas
 comment2.target=void\ Leer(java.io.File,\ boolean,\ boolean,\ boolean,\ java.lang.String[])
-comment2.text=\r\n\ Lee\ los\ contenidos\ de\ los\ archivos\r\n\r\n\ @PARAM\ \=\ File\:\ archivo\ a\ leer;\ stem,\ simb\ y\ stop\:\ configuraci\u00F3n\ de\ la\ construcci\u00F3n\ del\ indice.\r\n\ @return\ \=\ N/A\r\n
+comment2.text=\r\n\ Lee\ los\ contenidos\ de\ los\ archivos\r\n\r\n\ @PARAM\ \=\ File\:\ archivo\ a\ leer;\ stem,\ simb\ y\ stop\:\ configuraci\u00F3n\ de\ la\ construcci\u00F3n\ del\ indice;\ consultas\:\ terminos\ de\ la\ consulta\r\n\ @return\ \=\ N/A\r\n
 comment3.params=
 comment3.target=void\ sacarPeso()
-comment4.params=nombre
-comment4.target=void\ obtenerDocs(java.lang.String)
-comment5.params=aFile\ nombre
-comment5.target=void\ LeerDF(java.io.File,\ java.lang.String)
-comment6.params=consulta
-comment6.target=void\ dividirConsulta(java.lang.String)
-comment7.params=args
-comment7.target=void\ main(java.lang.String[])
-comment7.text=\r\n\ Programa\ principal\ para\ elegir\ las\ opciones\ de\ configuraci\u00F3n\ y\ normalizacion\r\n
-numComments=8
+comment4.params=sSplit\ tSplit
+comment4.target=double\ pesoJaccard(java.lang.String[],\ java.lang.String[])
+comment5.params=nombre
+comment5.target=void\ obtenerDocs(java.lang.String)
+comment6.params=aFile\ nombre
+comment6.target=void\ LeerDF(java.io.File,\ java.lang.String)
+comment7.params=consulta
+comment7.target=void\ dividirConsulta(java.lang.String)
+comment8.params=args
+comment8.target=void\ main(java.lang.String[])
+comment8.text=\r\n\ Programa\ principal\ para\ elegir\ las\ opciones\ de\ configuraci\u00F3n\ y\ normalizacion\r\n
+numComments=9

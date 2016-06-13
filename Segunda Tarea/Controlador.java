@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.lang.*;
 import java.util.*;
 
-
 public class Controlador
 {
     private Arbol arbol = new Arbol(); //Indice
@@ -31,6 +30,7 @@ public class Controlador
     private TreeMap<String,Integer> termDocs = new TreeMap<String, Integer>();
     private TreeMap<String, Double> pesoConsultas = new TreeMap<String, Double>();
     private TreeMap<String, Double> ranking = new TreeMap<String, Double>();
+    private TreeMap<String,String[]> docs = new TreeMap<String, String[]>();
     private int cuenta = 0;
     private int noDocuments;
 
@@ -39,15 +39,17 @@ public class Controlador
      */
     public Controlador()
     {}
-    
+
     /**
      * Revisa los documentos a leer
      *
      * @PARAM = boolean stem, simb y stop: configuración de la construcción del indice.
      * @return = N/A
      */
-    public void run(boolean stemm, boolean simb, boolean stop)
+    public String run(boolean stemm, boolean simb, boolean stop)
     {
+        boolean jaccard = true;
+        String resultados = "";
         try
         {
             File textFilesDirectory = new File("documents"); //Revisa la carpeta
@@ -62,40 +64,55 @@ public class Controlador
             {
                 Leer(documents[i], stemm, simb, stop, terminosConsulta); //Lee el contenido, le envía las opciones ingresadas por el usuario
             }
-            
+
             File temp;
             File[] documentos = documents;
-            
+            //             for(Map.Entry<String,Double> entry : ranking.entrySet()) {
+            //                 String key = entry.getKey();
+            //                 Double value = entry.getValue();
+            // 
+            //                 System.out.println(key + " => " + value);
+            //             }
+
+            //Se ordenan los resultados
             for (int i = 0; i < ranking.size(); i++) 
             {
                 for (int j = 1; j < ranking.size() - i; j++) 
                 { 
-                    if (ranking.get(documentos[j - 1].getName()) > ranking.get(documentos[j].getName())) 
-                    {
-                        temp = documentos[j - 1];
-                        documentos[j - 1] = documentos[j];
-                        documentos[j] = temp;
-                    }     
+                    if(jaccard == true){ //Jaccard ordena de mayor a menor puntaje
+                        if (ranking.get(documentos[j - 1].getName()) < ranking.get(documentos[j].getName())) 
+                        {                        
+                            temp = documentos[j - 1];
+                            documentos[j - 1] = documentos[j];
+                            documentos[j] = temp;
+                        }
+                    }
+                    else{//ordena de menor a mayor angulo de coseno
+                        if (ranking.get(documentos[j - 1].getName()) > ranking.get(documentos[j].getName())) 
+                        {                        
+                            temp = documentos[j - 1];
+                            documentos[j - 1] = documentos[j];
+                            documentos[j] = temp;
+                        }
+                    }
                 }
             }
-            
-            System.out.println("Ranking" + ranking.values());
-            
+
             for(int i = 0; i < documentos.length; i++)
             {
-              System.out.println("Documentos: " + documentos[i].getName());    
+                //                 System.out.println("Documentos: " + documentos[i].getName());    
+                resultados += documentos[i].getName()+" -- "+ranking.get(documentos[i].getName())+"\n";
             }
-            
-            int contar = arbol.contar(); 
-            System.out.println("Tamaño del ínidice "+contar);  //Tamaño del indice
-            File invertedIndexFile = new File("index" + File.separator + "invertedindex.txt"); // Crea el archivo donde guardar el indice invertido
-            PrintWriter writer = new PrintWriter("index" + File.separator + "invertedindex.txt", "UTF-8"); // Escribe el contenido de la tabla hash formada
-            Set setOfKeys = arbol.getRaiz().keySet();
-            Iterator iterator = setOfKeys.iterator();
 
-            while (iterator.hasNext() == true) { //se guarda el indice en un archivo
-                String key = (String) iterator.next();
-                writer.println(key+"="+arbol.getRaiz().get(key)); //se guarda el termino y su respectiva lista de postings
+            int contar = arbol.contar(); 
+            //System.out.println("Tamaño del índice "+contar);  //Tamaño del indice            
+            PrintWriter writer = new PrintWriter("index" + File.separator + "invertedindex.txt", "UTF-8"); // Escribe el contenido de la tabla hash formada
+            Set setOfKeys1 = arbol.getRaiz().keySet();
+            Iterator iterator1 = setOfKeys1.iterator();
+
+            while (iterator1.hasNext() == true) { //se guarda el indice en un archivo
+                String key = (String) iterator1.next();
+                writer.println(key+"="+ranking.get(key)); //se guarda el termino y su respectiva lista de postings
             }
             writer.close();
         }
@@ -103,16 +120,19 @@ public class Controlador
         {
             e.printStackTrace();
         }
+        return resultados;
     }
 
     /**
      * Lee los contenidos de los archivos
      *
-     * @PARAM = File: archivo a leer; stem, simb y stop: configuración de la construcción del indice.
+     * @PARAM = File: archivo a leer; stem, simb y stop: configuración de la construcción del indice; consultas: terminos de la consulta
      * @return = N/A
      */
     public void Leer(File aFile, boolean stemm, boolean simb, boolean stop,String[] consultas)
     {
+        boolean jaccard = true;
+        ArrayList<String> documentText = new ArrayList<String>();
         try 
         {
             BufferedReader input =  new BufferedReader(new FileReader(aFile));  //archivo a leer
@@ -126,7 +146,7 @@ public class Controlador
                 List pesosDocumentos = new ArrayList();
                 List documentosNormal = new ArrayList();
                 String line = null;
-                
+
                 for(int x = 0; x < consultas.length; x++)
                 {
                     termDocs.put(consultas[x],0);
@@ -142,7 +162,7 @@ public class Controlador
                         pesoConsultas.put(consultas[x],peso);
                     }
                 }
-                
+
                 while (( line = input.readLine()) != null) //lee linea por linea, si es nulo llego al final del archivo
                 {
                     String term = line.toLowerCase(); //forma de parsear, vuelve todo a minuscula para no caer en duplicacion de datos                   
@@ -185,6 +205,10 @@ public class Controlador
                         term = st.stemm(term);
                     }
 
+                    if(jaccard == true){
+                        documentText.add(term);
+                    }
+
                     if(term.equals("") == false && term.equals (" ") == false){ //Una vez aplicados los cambios al término se revisa el indice
                         if(arbol.buscar(term) == false)
                         {
@@ -215,24 +239,24 @@ public class Controlador
                         }
                     }
                 }
-                
+
                 for(int o = 0; o < terminos.size(); o++) 
                 {
                     pesosDocumentos.add(arbol.buscarTF((String)terminos.get(o), aFile.getName())); //busca la frecuencia con logaritmos de una vez por cada termino en el documento
                     //System.out.println(pesosDocumentos.get(o));
                 }
-                
-                documentosNormal = arbol.normalizar(pesosDocumentos); //normaliza los terminos encontrados dentro del documento
-               /* for(int k = 0; k < documentosNormal.size(); k++)
+
+                documentosNormal = arbol.normalizar(pesosDocumentos); //normaliza los vectores usando coseno
+                /*for(int k = 0; k < documentosNormal.size(); k++)
                 {
-                    System.out.println("Normalizado:" + documentosNormal.get(k));
+                System.out.println("Normalizado:" + documentosNormal.get(k));
                 }*/
-                
+
                 cuenta++;
                 obtenerDocs(aFile.getName());
-                
+
                 //System.out.println("DF por termino:" + termDocs.values());
-                                                          
+
                 for(int g = 0; g < terminos.size(); g++)
                 {
                     if(pesoConsultas.containsKey(terminos.get(g)) == true)
@@ -246,20 +270,27 @@ public class Controlador
                     }
                     //System.out.println("TF Log:" + pesoConsultas.values());
                 } 
-                
-                sacarPeso();
-                //System.out.println("Pesos:" + pesoConsultas.values());
-                double pesoFinal = 0;
-                
-                for(int a = 0; a < terminos.size(); a++)
-                {
-                    double producto = (double)documentosNormal.get(a)*pesoConsultas.get(terminos.get(a));
-                    pesoFinal += producto;
-                    //System.out.println("Producto:" + producto);
+
+                if(jaccard == true){
+                    String [] doc = documentText.toArray(new String[0]);
+                    double peso = pesoJaccard(terminosConsulta, doc);
+                    ranking.put(aFile.getName(),peso);
                 }
-                
-                System.out.println("Coseno:" + pesoFinal);
-                ranking.put(aFile.getName(),pesoFinal);
+                else{
+                    sacarPeso();
+
+                    //System.out.println("Pesos:" + pesoConsultas.values());
+                    double pesoFinal = 0;
+
+                    for(int a = 0; a < terminos.size(); a++){
+                        double producto = (double)documentosNormal.get(a)*pesoConsultas.get(terminos.get(a));
+                        pesoFinal += producto;
+                        //System.out.println("Producto:" + producto);
+                    }
+
+                    System.out.println("Coseno:" + pesoFinal);
+                    ranking.put(aFile.getName(),pesoFinal);
+                }
             }
             finally
             {
@@ -271,8 +302,8 @@ public class Controlador
             ex.printStackTrace();
         }
     }
-    
-    public void sacarPeso()
+
+    public void sacarPeso() //tf-idf
     {
         for(int i = 0; i < terminos.size(); i++)
         {
@@ -287,14 +318,63 @@ public class Controlador
             pesoConsultas.put((String)terminos.get(i), peso);
         }
     }
-    
+
+    public double pesoJaccard(String[] sSplit, String[] tSplit)  
+    {  
+        //calcula intersection  
+        List<String> intersection=new ArrayList<String>();  
+        for(int i=0;i<sSplit.length;i++)  
+        {  
+            for(int j=0;j<tSplit.length;j++)  
+            {  
+                if(!intersection.contains(sSplit[i])){      
+                    if(sSplit[i].equals(tSplit[j]))   
+                    {  
+                        intersection.add(sSplit[i]);  
+                        break;  
+                    }  
+                }
+            }  
+        }  
+
+        //calcula union  
+        List<String> union=new ArrayList<String>();  
+        if(sSplit.length>tSplit.length)                      
+        {  
+            for(int i=0;i<sSplit.length;i++){ 
+                if(!union.contains(sSplit[i])){  
+                    union.add(sSplit[i]);  
+                }
+            }
+            for(int i=0;i<tSplit.length;i++){
+                if(!union.contains(tSplit[i])){
+                    union.add(tSplit[i]);  
+                }
+            }
+        }  
+        else  
+        {  
+            for(int i=0;i<tSplit.length;i++){  
+                if(!union.contains(tSplit[i])){  
+                    union.add(tSplit[i]);  
+                }
+            }
+            for(int i=0;i<sSplit.length;i++){
+                if(!union.contains(sSplit[i])){
+                    union.add(sSplit[i]);  
+                }
+            }
+        }    
+        return ((double)intersection.size())/((double)union.size());  
+    }    
+
     public void obtenerDocs(String nombre)
     {
         File textFilesDirectory = new File("documents"); //Revisa la carpeta
         if(!textFilesDirectory.isDirectory()) {
-             System.err.println("No directory called " + textFilesDirectory.getName() + "found..."); //Si no existe nada, reporta que no encontro el directorio
-             System.err.println("Exit System");
-             System.exit(1);
+            System.err.println("No directory called " + textFilesDirectory.getName() + "found..."); //Si no existe nada, reporta que no encontro el directorio
+            System.err.println("Exit System");
+            System.exit(1);
         }
         File[] documents = textFilesDirectory.listFiles(); //Crea un array de archivos
         int nuDocuments = documents.length;
@@ -304,7 +384,7 @@ public class Controlador
             LeerDF(documents[i],nombre); //Lee el contenido, le envía las opciones ingresadas por el usuario          
         }
     }
-    
+
     public void LeerDF(File aFile, String nombre)
     {
         try 
@@ -319,16 +399,16 @@ public class Controlador
                     while (( line = input.readLine()) != null) //lee linea por linea, si es nulo llego al final del archivo
                     {
                         String term = line.toLowerCase();
-                        
+
                         if(term.equals("") == false && term.equals (" ") == false){ //Una vez aplicados los cambios al término se revisa el indice
                             if(termDocs.containsKey(term) == true)
                             {
                                 int dfActual = termDocs.get(term);
                                 if(margen.contains(term) == false)
                                 {
-                                   dfActual++;
-                                   termDocs.put(term,dfActual);
-                                   margen.add(term);
+                                    dfActual++;
+                                    termDocs.put(term,dfActual);
+                                    margen.add(term);
                                 }
                             }
                         }
@@ -345,15 +425,15 @@ public class Controlador
             ex.printStackTrace();
         } 
     }
-    
+
     public void dividirConsulta(String consulta)
     {
-       terminosConsulta = consulta.split(" ");
-       for(int k = 0; k < terminosConsulta.length;k++)
-       {
-          terminos.add(terminosConsulta[k]);    
-          consultas.add(terminosConsulta[k]);
-       }
+        terminosConsulta = consulta.split(" ");
+        for(int k = 0; k < terminosConsulta.length;k++)
+        {
+            terminos.add(terminosConsulta[k]);    
+            consultas.add(terminosConsulta[k]);
+        }
     }
 
     /**
@@ -361,58 +441,56 @@ public class Controlador
      */
     public static void main(String args[])
     {
-        //controlador.run();
-        
-        
         boolean simb = false;
         boolean stemm = false; 
         boolean stop = false;
         Interfaz interfaz = new Interfaz();
         Controlador controlador = new Controlador();
         int opcion = 0;
-        
-        String consulta = interfaz.consultar();
-        controlador.dividirConsulta(consulta);
-                
-        //Se corre hasta que el usuario decida finalizar el programa
-        //while(opcion != 2)
-        //{
+        while(true){
+            String consulta = interfaz.consultar();
+            controlador.dividirConsulta(consulta);
+
+            //Se corre hasta que el usuario decida finalizar el programa
+            //while(opcion != 2)
+            //{
             //opcion = interfaz.comenzar();
             //if(opcion == 0)
             //{
-                boolean [] conf = interfaz.configuracion(); //se piden las opciones de normalización
-                if(conf[0] == true)
-                {
-                    controlador.st = new Stemm_es();
-                }
-                stemm = conf[0];
-                simb = conf[1];
-                stop = conf[2];
-                
-                double inicioIndex = System.currentTimeMillis();
-                controlador.run(stemm, simb, stop);  //se inicia la construccion del indice
-                double finIndex = System.currentTimeMillis();
-                double tiempo = finIndex - inicioIndex;  //se calcula la duracipn de construccion del indice
-                
-                FileWriter arch = null;
-                PrintWriter writer = null;
-                try{
-                    arch = new FileWriter("tiempoConstruccion.txt",true); // se guarda el tiempo de de ejecución de construccion del indice en un archivo
-                    writer = new PrintWriter(arch);
-                    writer.println(tiempo); 
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-                finally {
-                    try {
-                        if (null != arch){
-                            arch.close(); // se cierra archivo de escritura
-                        }
-                    } catch (Exception e2) {
-                        e2.printStackTrace();
+            boolean [] conf = interfaz.configuracion(); //se piden las opciones de normalización
+            if(conf[0] == true)
+            {
+                controlador.st = new Stemm_es();
+            }
+            stemm = conf[0];
+            simb = conf[1];
+            stop = conf[2];
+
+            double inicioIndex = System.currentTimeMillis();
+            String resultados = controlador.run(stemm, simb, stop);  //se construye el  indice, se calculan pesos y se devuelven los documentos en orden de relevancia 
+            double finIndex = System.currentTimeMillis();
+            double tiempo = finIndex - inicioIndex;  //se calcula la duracipn de construccion del indice
+            interfaz.mostrarResultados(resultados);
+            FileWriter arch = null;
+            PrintWriter writer = null;
+            try{
+                arch = new FileWriter("tiempoConstruccion.txt",true); // se guarda el tiempo de de ejecución de construccion del indice en un archivo
+                writer = new PrintWriter(arch);
+                writer.println(tiempo); 
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            finally {
+                try {
+                    if (null != arch){
+                        arch.close(); // se cierra archivo de escritura
                     }
+                } catch (Exception e2) {
+                    e2.printStackTrace();
                 }
+            }
             //}
-        //}
+            //}
+        }
     }
 }
