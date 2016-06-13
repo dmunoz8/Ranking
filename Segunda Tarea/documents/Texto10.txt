@@ -3,3 +3,10 @@ insurance
 auto
 insurance
 hola
+car
+insurance
+auto
+insurance
+hola
+el
+doble

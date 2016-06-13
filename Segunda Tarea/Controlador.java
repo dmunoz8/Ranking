@@ -46,9 +46,8 @@ public class Controlador
      * @PARAM = boolean stem, simb y stop: configuración de la construcción del indice.
      * @return = N/A
      */
-    public String run(boolean stemm, boolean simb, boolean stop)
+    public String run(boolean stemm, boolean simb, boolean stop, boolean jaccard)
     {
-        boolean jaccard = true;
         String resultados = "";
         try
         {
@@ -62,42 +61,42 @@ public class Controlador
             noDocuments = documents.length;
             for(int i = 0; i < noDocuments; i++)
             {
-                Leer(documents[i], stemm, simb, stop, terminosConsulta); //Lee el contenido, le envía las opciones ingresadas por el usuario
+                Leer(documents[i], stemm, simb, stop, jaccard, terminosConsulta); //Lee el contenido, le envía las opciones ingresadas por el usuario
             }
 
             File temp;
             File[] documentos = documents;
-            //             for(Map.Entry<String,Double> entry : ranking.entrySet()) {
-            //                 String key = entry.getKey();
-            //                 Double value = entry.getValue();
-            // 
-            //                 System.out.println(key + " => " + value);
-            //             }
+            for(Map.Entry<String,Double> entry : ranking.entrySet()) {
+                String key = entry.getKey();
+                Double value = entry.getValue();
 
-            //Se ordenan los resultados
-            for (int i = 0; i < ranking.size(); i++) 
-            {
-                for (int j = 1; j < ranking.size() - i; j++) 
-                { 
-                    if(jaccard == true){ //Jaccard ordena de mayor a menor puntaje
-                        if (ranking.get(documentos[j - 1].getName()) < ranking.get(documentos[j].getName())) 
-                        {                        
-                            temp = documentos[j - 1];
-                            documentos[j - 1] = documentos[j];
-                            documentos[j] = temp;
-                        }
-                    }
-                    else{//ordena de menor a mayor angulo de coseno
-                        if (ranking.get(documentos[j - 1].getName()) > ranking.get(documentos[j].getName())) 
-                        {                        
-                            temp = documentos[j - 1];
-                            documentos[j - 1] = documentos[j];
-                            documentos[j] = temp;
-                        }
-                    }
-                }
+                System.out.println(key + " => " + value);
             }
 
+            //Se ordenan los resultados usando bubblesort
+            //             for (int i = 0; i < ranking.size(); i++) 
+            //             {
+            //                 for (int j = 1; j < ranking.size() - i; j++) 
+            //                 { 
+            //                     if(jaccard == true){ //Jaccard ordena de mayor a menor puntaje
+            //                         if (ranking.get(documentos[j - 1].getName()) < ranking.get(documentos[j].getName())) 
+            //                         {                        
+            //                             temp = documentos[j - 1];
+            //                             documentos[j - 1] = documentos[j];
+            //                             documentos[j] = temp;
+            //                         }
+            //                     }
+            //                     else{//ordena de menor a mayor angulo de coseno
+            //                         if (ranking.get(documentos[j - 1].getName()) > ranking.get(documentos[j].getName())) 
+            //                         {                        
+            //                             temp = documentos[j - 1];
+            //                             documentos[j - 1] = documentos[j];
+            //                             documentos[j] = temp;
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            documentos = quickSort(documentos,0,ranking.size()-1, jaccard);
             for(int i = 0; i < documentos.length; i++)
             {
                 //                 System.out.println("Documentos: " + documentos[i].getName());    
@@ -129,9 +128,8 @@ public class Controlador
      * @PARAM = File: archivo a leer; stem, simb y stop: configuración de la construcción del indice; consultas: terminos de la consulta
      * @return = N/A
      */
-    public void Leer(File aFile, boolean stemm, boolean simb, boolean stop,String[] consultas)
+    public void Leer(File aFile, boolean stemm, boolean simb, boolean stop, boolean jaccard,String[] consultas)
     {
-        boolean jaccard = true;
         ArrayList<String> documentText = new ArrayList<String>();
         try 
         {
@@ -437,6 +435,52 @@ public class Controlador
     }
 
     /**
+     * @brief: metodo de ordenamiento que utiliza el algoritmo quicksort. Dependiendo de si se usa jaccard o cosenos para puntaje ordena
+     * de forma ascendente o descendente. Recibe un arreglo de archivos a ordenar, los limites del arreglo y un booleano indicando si se usa jaccard.
+     * @param: File[]documentos, int left, int right, boolean jaccard
+     */
+    public File[] quickSort(File[] documentos, int left, int right, boolean jaccard) {
+        int i = left, j = right;
+        File tmp;
+        double pivot = ranking.get(documentos[(left + right) / 2].getName());
+
+        /* partition */
+
+        while (i <= j) {
+            if(jaccard == true){//De mayor a menor coeficiente
+                while (ranking.get(documentos[i].getName()) > pivot)
+                    i++;
+
+                while (ranking.get(documentos[j].getName()) < pivot)
+                    j--;
+            }
+            else{//de menor a mayor angulo de coseno
+                while (ranking.get(documentos[i].getName()) < pivot)
+                    i++;
+
+                while (ranking.get(documentos[j].getName()) > pivot)
+                    j--;
+            }
+            if (i <= j) {
+                tmp = documentos[i];
+                documentos[i] = documentos[j];
+                documentos[j] = tmp;
+                i++;
+                j--;
+            }
+        }
+
+        /* recursion */
+
+        if (left < j)
+            quickSort(documentos, left, j, jaccard);
+
+        if (i < right)
+            quickSort(documentos, i, right, jaccard);
+        return documentos;
+    }
+
+    /**
      * Programa principal para elegir las opciones de configuración y normalizacion
      */
     public static void main(String args[])
@@ -444,6 +488,7 @@ public class Controlador
         boolean simb = false;
         boolean stemm = false; 
         boolean stop = false;
+        boolean jaccard = false;
         Interfaz interfaz = new Interfaz();
         Controlador controlador = new Controlador();
         int opcion = 0;
@@ -465,9 +510,10 @@ public class Controlador
             stemm = conf[0];
             simb = conf[1];
             stop = conf[2];
+            jaccard = conf[3];
 
             double inicioIndex = System.currentTimeMillis();
-            String resultados = controlador.run(stemm, simb, stop);  //se construye el  indice, se calculan pesos y se devuelven los documentos en orden de relevancia 
+            String resultados = controlador.run(stemm, simb, stop, jaccard);  //se construye el  indice, se calculan pesos y se devuelven los documentos en orden de relevancia 
             double finIndex = System.currentTimeMillis();
             double tiempo = finIndex - inicioIndex;  //se calcula la duracipn de construccion del indice
             interfaz.mostrarResultados(resultados);

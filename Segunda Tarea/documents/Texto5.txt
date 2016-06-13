@@ -1,5 +1,9 @@
 car
 insurance
 auto
-insurance
-hola
+relevancia
+de
+este
+deberia
+ser
+menor

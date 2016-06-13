@@ -3,3 +3,6 @@ insurance
 auto
 insurance
 hola
+insurance
+car
+car
