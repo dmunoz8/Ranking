@@ -553,10 +553,10 @@ public class Controlador
             FileWriter arch = null;
             PrintWriter writer = null;
             try{
-                arch = new FileWriter("resultsKElemnts.txt",true); // se guarda el tiempo de de ejecución de construccion del indice en un archivo
+                arch = new FileWriter("results.txt",true); // se guarda el tiempo de de ejecución de construccion del indice en un archivo
                 writer = new PrintWriter(arch);
-                //                     writer.println(tiempo); 
-                writer.println(resultados);
+                writer.println(tiempo); 
+                //                 writer.println(resultados);
             }catch(Exception e){
                 e.printStackTrace();
             }
