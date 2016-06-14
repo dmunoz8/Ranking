@@ -6,6 +6,7 @@
 import java.lang.*;
 import javax.swing.JOptionPane;
 import javax.swing.JCheckBox;
+import javax.swing.JTextField;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -61,12 +62,13 @@ public class Interfaz extends JFrame
      * @params: N/A
      * @return: opciones seleccionadas en forma de booleanos
      */
-    public boolean[] configuracion(){
+    public Object[] configuracion(){
         JCheckBox stemmingCheck = new JCheckBox("Stemming");
         JCheckBox simbolosCheck = new JCheckBox("Signos de puntuacion");
         JCheckBox stopCheck = new JCheckBox("Elimina stop words");
         JCheckBox jaccard = new JCheckBox("Usar Coeficiente de Jaccard");
-        Object[] params = {stemmingCheck, simbolosCheck,stopCheck,jaccard};
+        JTextField relevanciaText = new JTextField();
+        Object[] params = {"Cantidad de resultados a mostrar",relevanciaText, stemmingCheck, simbolosCheck,stopCheck,jaccard};
         int n = JOptionPane.showConfirmDialog(this, params, "Configurción", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
         //         JOptionPane.showOptionDialog(null,null, "Seleccione las opciones de indexado y asignación de pesos",JOptionPane.OK_CANCEL_OPTION,
         //                 JOptionPane.INFORMATION_MESSAGE, null,  params, "Opciones");
@@ -75,22 +77,8 @@ public class Interfaz extends JFrame
             System.exit(1);  //Si se selecciona salir o se cierra la ventana se finaliza el programa
         }
          //stemm = [0], simbolos = [1], sin stopWords = [2], jaccard = [3]
-        boolean []vals = {stemmingCheck.isSelected(), simbolosCheck.isSelected(), stopCheck.isSelected(), jaccard.isSelected()};
-        return vals;
-
-        //         textArea.setText("");
-        //         JTextField textField1 = new JTextField();
-        //         final JTextField textField2 = new JTextField();
-        //         final JCheckBox checkBox = new JCheckBox();
-        //         textField2.setEnabled(false);
-        // 
-        //              Object[] inputFields = {"Enter Text 01", textField1,
-        //                 "Enable TextField 02", checkBox,
-        //                 "Enter Text 02", textField2};
-        // 
-        //         int option = JOptionPane.showConfirmDialog(this, inputFields, "Multiple Inputs", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-        // 
-        //         
+        Object []vals = {stemmingCheck.isSelected(), simbolosCheck.isSelected(), stopCheck.isSelected(), jaccard.isSelected(),relevanciaText.getText()};
+        return vals; 
 
     }
 

@@ -24,6 +24,8 @@ public class Controlador
     private Arbol arbol = new Arbol(); //Indice
     private Interfaz interfaz = new Interfaz();
     private Stemm_es st; //clase que implementa el algoritmo de Porter para stemming
+    private String resultados = "";
+    private String cantidad = "";
     private String[] terminosConsulta;
     private List terminos = new ArrayList();
     private List consultas = new ArrayList();
@@ -48,7 +50,6 @@ public class Controlador
      */
     public String run(boolean stemm, boolean simb, boolean stop, boolean jaccard)
     {
-        String resultados = "";
         try
         {
             File textFilesDirectory = new File("documents"); //Revisa la carpeta
@@ -66,12 +67,12 @@ public class Controlador
 
             File temp;
             File[] documentos = documents;
-            for(Map.Entry<String,Double> entry : ranking.entrySet()) {
-                String key = entry.getKey();
-                Double value = entry.getValue();
-
-                System.out.println(key + " => " + value);
-            }
+            //             for(Map.Entry<String,Double> entry : ranking.entrySet()) {
+            //                 String key = entry.getKey();
+            //                 Double value = entry.getValue();
+            // 
+            //                 System.out.println(key + " => " + value);
+            //             }
 
             //Se ordenan los resultados usando bubblesort
             //             for (int i = 0; i < ranking.size(); i++) 
@@ -96,14 +97,30 @@ public class Controlador
             //                     }
             //                 }
             //             }
-            documentos = quickSort(documentos,0,ranking.size()-1, jaccard);
-            for(int i = 0; i < documentos.length; i++)
-            {
-                //                 System.out.println("Documentos: " + documentos[i].getName());    
-                resultados += documentos[i].getName()+" -- "+ranking.get(documentos[i].getName())+"\n";
-            }
 
-            int contar = arbol.contar(); 
+            documentos = quickSort(documentos,0,ranking.size()-1, jaccard);
+            int resultsRelevantes = 0;
+            int cuantos = documentos.length;
+            int i = 0;
+            try{
+                if(Integer.parseInt(cantidad) < cuantos){
+                    cuantos = Integer.parseInt(cantidad);
+                }
+            }
+            catch(NumberFormatException n){}
+
+            while(i < documentos.length && cuantos > 0)
+            {
+                if(ranking.get(documentos[i].getName()) > 0){
+                    resultados += documentos[i].getName()+" -- "+ranking.get(documentos[i].getName())+"\n";
+                    resultsRelevantes++;
+                    cuantos--;
+                }
+                i++;
+            }
+            resultados += resultsRelevantes+" resultados\n";
+
+            //int contar = arbol.contar(); 
             //System.out.println("Tamaño del índice "+contar);  //Tamaño del indice            
             PrintWriter writer = new PrintWriter("index" + File.separator + "invertedindex.txt", "UTF-8"); // Escribe el contenido de la tabla hash formada
             Set setOfKeys1 = arbol.getRaiz().keySet();
@@ -187,7 +204,7 @@ public class Controlador
                             "ningunas ninguno ningunos no nos nosotras nosotros nuestra nuestras nuestro nuestros otra otras otro otros"+
                             "para parecer pero poca pocas poco pocos por porque puede pueden puedo"+
                             "pues que querer quien quien quienes quienesquiera quienquiera se segun ser si siempre siendo sin sino so sobre"+
-                            "sois solamente solo somos soy sr sra sres sta su sus suya suyas suyo suyos tal"+
+                            "sois solamente solo somos soy sr sra sres sta su consultarsus suya suyas suyo suyos tal"+
                             "tales tan tanta tantas tanto tantos te teneis tenemos tener tengo ti tiene tienen toda"+
                             "todas todo todos tras tu tu tus tuya tuyo tuyos un una unas uno unos usa usamos usan usar usas"+
                             "uso usted ustedes va vamos van varias varios vaya vosotras vosotros voy vuestra vuestras vuestro vuestros y ya yo";
@@ -241,19 +258,11 @@ public class Controlador
                 for(int o = 0; o < terminos.size(); o++) 
                 {
                     pesosDocumentos.add(arbol.buscarTF((String)terminos.get(o), aFile.getName())); //busca la frecuencia con logaritmos de una vez por cada termino en el documento
-                    //System.out.println(pesosDocumentos.get(o));
                 }
 
                 documentosNormal = arbol.normalizar(pesosDocumentos); //normaliza los vectores usando coseno
-                /*for(int k = 0; k < documentosNormal.size(); k++)
-                {
-                System.out.println("Normalizado:" + documentosNormal.get(k));
-                }*/
-
                 cuenta++;
                 obtenerDocs(aFile.getName());
-
-                //System.out.println("DF por termino:" + termDocs.values());
 
                 for(int g = 0; g < terminos.size(); g++)
                 {
@@ -266,7 +275,6 @@ public class Controlador
                             pesoConsultas.put((String)terminos.get(g), pesoC);
                         }
                     }
-                    //System.out.println("TF Log:" + pesoConsultas.values());
                 } 
 
                 if(jaccard == true){
@@ -276,17 +284,12 @@ public class Controlador
                 }
                 else{
                     sacarPeso();
-
-                    //System.out.println("Pesos:" + pesoConsultas.values());
                     double pesoFinal = 0;
 
                     for(int a = 0; a < terminos.size(); a++){
                         double producto = (double)documentosNormal.get(a)*pesoConsultas.get(terminos.get(a));
-                        pesoFinal += producto;
-                        //System.out.println("Producto:" + producto);
+                        pesoFinal += producto;                     
                     }
-
-                    System.out.println("Coseno:" + pesoFinal);
                     ranking.put(aFile.getName(),pesoFinal);
                 }
             }
@@ -301,7 +304,10 @@ public class Controlador
         }
     }
 
-    public void sacarPeso() //tf-idf
+    /**
+     * @brief Calcula el tf-idf y lo guarda en un mapa que contiene el termino y su peso.
+     */
+    public void sacarPeso()
     {
         for(int i = 0; i < terminos.size(); i++)
         {
@@ -312,11 +318,16 @@ public class Controlador
             }
             double idf = 1 + (Math.log10(noDocuments/df));
             double tf = pesoConsultas.get(terminos.get(i));
-            double peso = tf*idf;
+            double peso = tf*idf;        
             pesoConsultas.put((String)terminos.get(i), peso);
         }
     }
 
+    /**
+     * @brief Calcula la similitud entre consulta y documento usando el coeficiente de Jaccard. Recibe terminos de consulta y documento en un arreglo de Strings.
+     * @param String[], String[]
+     * @return similutud de la consulta y el documento, un valor entre 0 y 1.
+     */
     public double pesoJaccard(String[] sSplit, String[] tSplit)  
     {  
         //calcula intersection  
@@ -366,6 +377,10 @@ public class Controlador
         return ((double)intersection.size())/((double)union.size());  
     }    
 
+    /**
+     * Obtiene todos los busca el termino, recibido por parametro, en todos los documentos.
+     * @param String
+     */
     public void obtenerDocs(String nombre)
     {
         File textFilesDirectory = new File("documents"); //Revisa la carpeta
@@ -376,13 +391,18 @@ public class Controlador
         }
         File[] documents = textFilesDirectory.listFiles(); //Crea un array de archivos
         int nuDocuments = documents.length;
-        for(int i = 0; i < nuDocuments; i++)
+        for(int i = 0; i < nuDocuments; i++)//busca en todos los documentos
         {
             cuenta++;
             LeerDF(documents[i],nombre); //Lee el contenido, le envía las opciones ingresadas por el usuario          
         }
     }
 
+    /**
+     * @brief Calcula la frecuencia (DF) de un termino en un documento.Recibe el archivo y el termino a buscar.
+     * @param, File, String
+     * @return void
+     */
     public void LeerDF(File aFile, String nombre)
     {
         try 
@@ -424,13 +444,29 @@ public class Controlador
         } 
     }
 
+    /**
+     * Transforma la consulta recibida en la interfaz a un arreglo de Strings
+     */
     public void dividirConsulta(String consulta)
     {
         terminosConsulta = consulta.split(" ");
         for(int k = 0; k < terminosConsulta.length;k++)
         {
-            terminos.add(terminosConsulta[k]);    
-            consultas.add(terminosConsulta[k]);
+            //normalizacion de la consulta
+            terminosConsulta[k].toLowerCase();
+            terminosConsulta[k] = terminosConsulta[k].replaceAll("á","a"); //Se reemplazan las tildes
+            terminosConsulta[k] = terminosConsulta[k].replaceAll("é","e");
+            terminosConsulta[k] = terminosConsulta[k].replaceAll("í","i");
+            terminosConsulta[k] = terminosConsulta[k].replaceAll("ó","o");
+            terminosConsulta[k] = terminosConsulta[k].replaceAll("ú","u");
+            terminosConsulta[k] = terminosConsulta[k].replaceAll("[^\\w:/%$]","");
+
+            //             st = new Stemm_es();
+            //             terminosConsulta[k] = st.stemm(terminosConsulta[k]);
+            if(terminosConsulta[k] != null && terminosConsulta[k] != " "){
+                terminos.add(terminosConsulta[k]);    
+                consultas.add(terminosConsulta[k]);
+            }
         }
     }
 
@@ -494,35 +530,33 @@ public class Controlador
         int opcion = 0;
         while(true){
             String consulta = interfaz.consultar();
+            controlador.resultados = "Los resultados de la consulta: \""+consulta+" \"\n"+
+            "Documento -- similitud consulta-documento\n"+
+            "----------------------------------------------------------------\n";
             controlador.dividirConsulta(consulta);
-
-            //Se corre hasta que el usuario decida finalizar el programa
-            //while(opcion != 2)
-            //{
-            //opcion = interfaz.comenzar();
-            //if(opcion == 0)
-            //{
-            boolean [] conf = interfaz.configuracion(); //se piden las opciones de normalización
-            if(conf[0] == true)
+            Object [] conf = interfaz.configuracion(); //se piden las opciones de normalización
+            //             for(int i = 0 ; i < 100; i++){
+            if((boolean)conf[0] == true)
             {
                 controlador.st = new Stemm_es();
             }
-            stemm = conf[0];
-            simb = conf[1];
-            stop = conf[2];
-            jaccard = conf[3];
-
+            stemm = (boolean)conf[0];
+            simb = (boolean)conf[1];
+            stop = (boolean)conf[2];
+            jaccard = (boolean)conf[3];
+            controlador.cantidad = (String)conf[4];
             double inicioIndex = System.currentTimeMillis();
             String resultados = controlador.run(stemm, simb, stop, jaccard);  //se construye el  indice, se calculan pesos y se devuelven los documentos en orden de relevancia 
+            interfaz.mostrarResultados(resultados);
             double finIndex = System.currentTimeMillis();
             double tiempo = finIndex - inicioIndex;  //se calcula la duracipn de construccion del indice
-            interfaz.mostrarResultados(resultados);
             FileWriter arch = null;
             PrintWriter writer = null;
             try{
-                arch = new FileWriter("tiempoConstruccion.txt",true); // se guarda el tiempo de de ejecución de construccion del indice en un archivo
+                arch = new FileWriter("resultsKElemnts.txt",true); // se guarda el tiempo de de ejecución de construccion del indice en un archivo
                 writer = new PrintWriter(arch);
-                writer.println(tiempo); 
+                //                     writer.println(tiempo); 
+                writer.println(resultados);
             }catch(Exception e){
                 e.printStackTrace();
             }
@@ -535,8 +569,7 @@ public class Controlador
                     e2.printStackTrace();
                 }
             }
-            //}
-            //}
+            //             }
         }
     }
 }
